@@ -8,10 +8,13 @@ from matplotlib.figure import Figure
 
 # GUI Part import
 import sys
+import random
 from PyQt5.QtCore import *
+from PyQt5.QtGui import QIcon
 
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtWidgets import QSizePolicy
 
 from PyQt5.QtWidgets import QLabel
 from PyQt5.QtWidgets import QWidget
@@ -35,33 +38,33 @@ toggleSampleChecking = False
 imgHeight = 360
 imgWidth = 640
 HSV_sets = {
-    'BHH' : 115,
-    'BLH' : 85,
-    'BHS' : 105,
-    'BLS' : 75,
-    'BHV' : 95,
-    'BLV' : 65,
+    'BHH' : 130,
+    'BLH' : 80,
+    'BHS' : 250,
+    'BLS' : 220,
+    'BHV' : 110,
+    'BLV' : 90,
 
     'RHH' : 15,
     'RLH' : 0,
     'RHS' : 210,
     'RLS' : 190,
-    'RHV' : 195,
-    'RLV' : 175,
+    'RHV' : 210,
+    'RLV' : 180,
 
     'YHH' : 30,
     'YLH' : 15,
-    'YHS' : 260,
-    'YLS' : 220,
-    'YHV' : 220,
-    'YLV' : 190,
+    'YHS' : 160,
+    'YLS' : 140,
+    'YHV' : 180,
+    'YLV' : 160,
 
-    'GHH' : 40,
-    'GLH' : 27,
-    'GHS' : 110,
-    'GLS' : 80,
-    'GHV' : 75,
-    'GLV' : 60
+    'GHH' : 100,
+    'GLH' : 80,
+    'GHS' : 140,
+    'GLS' : 130,
+    'GHV' : 30,
+    'GLV' : 20
 }
 
 # Slot functions
@@ -86,7 +89,6 @@ def changeGreenMaskShow():
     greenMaskShow = 1 - greenMaskShow
 
 def changeAdjustSample():
-    plt.close('all')
     global toggleSampleChecking
     toggleSampleChecking = 1 - toggleSampleChecking
 
@@ -182,7 +184,7 @@ def resetValues(_self):
     _self.lineEditors['GHV'].setText(str(HSV_sets['GHV']))
     HSV_sets['GLV'] = 60
     _self.lineEditors['GLV'].setText(str(HSV_sets['GLV']))
-
+    
 # Create a subclass of QMainWindow to setup the GUI
 class pyTuningGUI(QMainWindow, QObject):
     # pyTuningGUI's view
@@ -284,7 +286,7 @@ class pyTuningGUI(QMainWindow, QObject):
             self.buttons[BTText].setFixedSize(100, 30) # width and height
             labelButtonLineEditorLayout.addWidget(self.buttons[BTText], BTCoor[0], BTCoor[1])
         self.generalLayout.addLayout(labelButtonLineEditorLayout)
-
+        
         self.buttons['BlueShow'].clicked.connect(changeBlueMaskShow)
         self.buttons['RedShow'].clicked.connect(changeRedMaskShow)
         self.buttons['YellowShow'].clicked.connect(changeYellowMaskShow)
@@ -324,10 +326,10 @@ def getCoor(img):
                 return j
     return 0
 
-def cvTask():
+def cvTask(qtWindow):
     global originImgShow, blueMaskShow, redMaskShow, yellowMaskShow, greenMaskShow,toggleSampleChecking ,counter
     while True:
-        img = readSamples(1)
+        img = readSamples(counter)
     # while cap.isOpened():
     #     _, img = cap.read()
 
@@ -347,7 +349,7 @@ def cvTask():
         yellowX = getCoor(yellowMask)
         greenX = getCoor(greenMask)
 
-        print('%6d' % counter, blueX, redX, yellowX, greenX)
+        print('%6d %3d %3d %3d %3d' % (counter, blueX, redX, yellowX, greenX))
 
         if originImgShow == True:
             cv2.imshow('origin', img)
@@ -371,11 +373,18 @@ def cvTask():
             cv2.destroyWindow('greenMask')
 
         # if toggleSampleChecking == True:
-        plt.imshow(img)
-        plt.title('Adjust Sample')
-        plt.show()
-            
+        #    qtWindow.imgPlotter.plot(hsv)
+        # else:
+        #     qtWindow.imgPlotter.close()
 
+        if toggleSampleChecking == True:
+            plt.figure()
+            plt.title('Adjusting')
+            plt.imshow(hsv)
+            plt.waitforbuttonpress()
+            toggleSampleChecking = False 
+        
+            
         counter += 1
         if cv2.waitKey(1) & 0xFF == ord('q'):
             blueMaskShow  = False
@@ -388,13 +397,13 @@ def cvTask():
 # Client Code
 def main():
     # Create an instance of QApplication
-    ptGUI = QApplication(sys.argv)
+    qtGUI = QApplication(sys.argv)
     # Show the GUI
     view = pyTuningGUI()
     view.show()
     # Execute the main loop
-    cvTask()
-    sys.exit(ptGUI.exec_())
+    cvTask(view)
+    sys.exit(qtGUI.exec_())
 
 
 if __name__ == '__main__':
