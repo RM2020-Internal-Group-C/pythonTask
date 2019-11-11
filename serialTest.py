@@ -19,8 +19,8 @@ except:
     pass
 
 sendStr = ''
-imgHeight = 600
-imgWidth = 800
+imgHeight = 480
+imgWidth = 640
 # Four sets of thres for specifying the colors
 # Bule
 blueUpperThres = np.array([115, 105, 95])
@@ -29,8 +29,10 @@ blueLowerThres = np.array([85, 75, 65])
 orangeUpperThres = np.array([15, 210, 195])
 orangeLowerThres = np.array([0, 190, 175])
 # Yellow
-yellowUpperThres = np.array([30, 195, 195])
-yellowLowerThres = np.array([15, 185, 185])
+# yellowUpperThres = np.array([30, 195, 195])
+# yellowLowerThres = np.array([15, 185, 185])
+yellowUpperThres = np.array([30, 260, 220])
+yellowLowerThres = np.array([15, 220, 190])
 # Green
 greenUpperThres = np.array([40, 110, 75])
 greenLowerThres = np.array([27, 80, 60])
@@ -41,9 +43,15 @@ def getCoor(img):
             if img[i][j] > 0:
                 return j
     return 0
+
+cap = cv2.VideoCapture(1)
+
 counter = 0
-while counter < 1000:
-    img = cv2.imread('3.jpg')
+while cap.isOpened():
+    _, img = cap.read()
+    cv2.imshow('row', img)
+    
+    # continue
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     blueMask = cv2.inRange(hsv, blueLowerThres, blueUpperThres)
     orangeMask = cv2.inRange(hsv, orangeLowerThres, orangeUpperThres)
@@ -54,6 +62,8 @@ while counter < 1000:
     orangeMask = cv2.medianBlur(orangeMask, 7)
     yellowMask = cv2.medianBlur(yellowMask, 7)
     greenMask = cv2.medianBlur(greenMask, 7)
+
+    cv2.imshow('yellow', yellowMask)
         
     blueX = getCoor(blueMask)
     orangeX = getCoor(orangeMask)
@@ -112,4 +122,11 @@ while counter < 1000:
         sendStr = '24'
     print(counter, sendStr)
     counter += 1
-# cap.release()
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        # cv2.imwrite('%d.jpg' % counter, img)
+        break
+    # if cv2.waitKey(1) & 0xFF == ord('s'):
+    #     cv2.imwrite('%d.jpg' % counter, img)
+
+cap.release()
+cv2.destroyAllWindows()
