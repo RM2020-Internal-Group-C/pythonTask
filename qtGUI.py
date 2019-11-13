@@ -25,10 +25,18 @@ from PyQt5.QtWidgets import QHBoxLayout
 from PyQt5.QtWidgets import QVBoxLayout
 from PyQt5.QtWidgets import QGridLayout
 
+# Find ports
+print ('Search ports...')
+ports = list(serial.tools.list_ports.comports())
+for p in ports:
+    print ('-- Find ports --')
+    print (p)
+ser = serial.Serial(ports[0])
+
 # global variables
 capCamera = 0
 counter = 0
-medianSize = 7
+medianSize = 11
 originImgShow = False
 blueMaskShow = False
 redMaskShow = False
@@ -62,8 +70,8 @@ HSV_sets = {
     'GHH' : 100,
     'GLH' : 80,
     'GHS' : 140,
-    'GLS' : 130,
-    'GHV' : 30,
+    'GLS' : 90,
+    'GHV' : 50,
     'GLV' : 20
 }
 
@@ -349,7 +357,7 @@ def cvTask(qtWindow):
         yellowX = getCoor(yellowMask)
         greenX = getCoor(greenMask)
 
-        print('%6d %3d %3d %3d %3d' % (counter, blueX, redX, yellowX, greenX))
+        print('%6d B: %3d R: %3d Y: %3d G: %3d' % (counter, blueX, redX, yellowX, greenX))
 
         if originImgShow == True:
             cv2.imshow('origin', img)
@@ -371,11 +379,6 @@ def cvTask(qtWindow):
             cv2.imshow('greenMask', greenMask)
         else:
             cv2.destroyWindow('greenMask')
-
-        # if toggleSampleChecking == True:
-        #    qtWindow.imgPlotter.plot(hsv)
-        # else:
-        #     qtWindow.imgPlotter.close()
 
         if toggleSampleChecking == True:
             plt.figure()
